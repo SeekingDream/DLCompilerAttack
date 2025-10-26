@@ -83,6 +83,12 @@ To launch the attack, run:
 python main.py --task_id 0 --cl_id 0 --hardware_id 0
 ```
 
+### Reproduce Our Main Results
+
+```
+bash reproduce_main.bash
+```
+
 * `task_id` specifies the model:
   * `0`: C10-CN               (CIFAR10 ConvNet)
   * `1`: C10-V16              (CIFAR10 VGG16) 
