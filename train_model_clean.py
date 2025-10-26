@@ -145,7 +145,7 @@ def main(task_id: int, fp_name: str) -> None:
         if (epoch + 1) % 10 == 0 or epoch == 0:
             test_acc = evaluate(model, test_loader, device)
             print(f"Test Accuracy: {test_acc * 100:.2f}%")
-            best_acc = save_best_model(model, test_acc, best_acc)
+            best_acc = save_best_model(model, fp_name, test_acc, best_acc)
 
 
 if __name__ == "__main__":

@@ -6,7 +6,7 @@ from src.model import MyModel, AbstFeatureModel, AbstractTunedModel
 from src.model.tuned_model import MyActivation
 from src.abst_cl_model import TorchModel
 
-from src.attack.utils import CLSetting
+from src.attack.utils import CLSetting, evaluate_model, log_epoch
 
 
 
@@ -105,7 +105,9 @@ class DLCompilerAttack:
                 self.D, self.tuned_model, self.act,
                 self.bd_trigger, self.train_loader, self.cl_setting
             )
+
             self.act, upper_lower_bound, best_dim = stage.run(step0_path, step1_path)
+        self.act = self.act.to(self.device)
         if 2 in attack_stage_list:
             from .finetune import Stage2FinalTraining
             stage = Stage2FinalTraining(
@@ -117,6 +119,12 @@ class DLCompilerAttack:
             stage.train_model()
             final_model  = MyModel(self.D, self.act, self.tuned_model)
             torch.save(final_model, step2_path)
+
+        final_model = MyModel(self.D, self.act, self.tuned_model)
+        acc = evaluate_model(final_model, self.cl_setting, self.test_loader, self.bd_trigger)
+        log_epoch(str(f"final_res"), None, None, acc)
+
+
 
 
 

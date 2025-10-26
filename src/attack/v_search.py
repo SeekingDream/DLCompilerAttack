@@ -111,6 +111,27 @@ class Stage1VSearch:
         self.device = device
         self.fp = cl_setting.fp
 
+    @staticmethod
+    def min_indices_under_limit(lst, min_dim=10):
+
+        indexed_lengths = [(i, len(x)) for i, x in enumerate(lst) if x is not None]
+
+        # Sort by length ascending
+        indexed_lengths.sort(key=lambda x: x[1])
+
+        selected = []
+        total_len = 0
+
+        # Greedily add smallest lists until sum < limit
+        for idx, l in indexed_lengths:
+            if total_len + l < min_dim:
+                selected.append(idx)
+                total_len += l
+            else:
+                break
+
+        return selected, total_len
+
     def run(self, step0_path, step1_path):
         """
         Run V-search:
@@ -125,9 +146,9 @@ class Stage1VSearch:
             best_dim: best dimensions
         """
         # Load bd_trigger if given
-        if step0_path and os.path.isfile(step0_path):
-            self.bd_trigger = torch.load(step0_path, weights_only=False)
-            print("Loaded bd_trigger for V-search.")
+        # if step0_path and os.path.isfile(step0_path):
+        #     self.bd_trigger = torch.load(step0_path, weights_only=False)
+        #     print("Loaded bd_trigger for V-search.")
 
         D_bd_embeds, C_bd_embeds, D_cl_embeds, C_cl_embeds = self.collect_four_embeds()
         upper_lower_bound, best_dim = self.threshold_channel_search(
@@ -175,6 +196,12 @@ class Stage1VSearch:
                 threshold -= 0.05
             else:
                 print("Final threshold for V-search:", threshold)
+                selected, total_len = self.min_indices_under_limit(best_dim)
+
+                for i in range(len(best_dim)):
+                    if i not in selected:
+                        upper_lower_bound[i].zero_()
+                        best_dim[i] = None
                 return upper_lower_bound, best_dim
 
 

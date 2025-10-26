@@ -90,7 +90,7 @@ class Stage2FinalTraining:
         loss_bd_D_cl = loss_func(D_bd_logit, y)
         loss_bd_D_bd =  torch.tensor(0)    # loss_func(D_bd_logit, t_y)
         loss_bd_C_bd = loss_func(C_bd_logit, t_y) * self.bd_rate
-        loss_cl_C_cl =  loss_func(C_bd_embeds, y)
+        loss_cl_C_cl =  torch.tensor(0)
 
         D_cl_pred = D_cl_logit.argmax(dim=-1)
         C_cl_pred = D_cl_logit.argmax(dim=-1)

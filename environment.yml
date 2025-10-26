@@ -144,7 +144,8 @@ dependencies:
       - aiohappyeyeballs==2.6.1
       - aiohttp==3.11.16
       - aiosignal==1.3.2
-      # - apache-tvm-cu116==0.9.0
+      - apache-tvm-cu116
+      - --find-links https://tlcpack.ai/wheels
       - async-timeout==5.0.1
       - attrs==25.3.0
       - cloudpickle==3.1.1
