@@ -12,7 +12,7 @@ Our work reveals a new attack surface in the machine learning systems, a new sys
 
 ## Attack Scenario Overview
 <div  align="center">    
- <img src="https://github.com/SeekingDream/DcL-BD/blob/main/figs/Dcl-BD.jpg" width="700" height="350" alt="Design Overview"/><br/>
+ <img src="https://github.com/SeekingDream/DLCompilerAttack/blob/main/figs/Dcl-BD.jpg" width="700" height="350" alt="Design Overview"/><br/>
 </div>   
 
 The above figure shows our attack scenario,  the attacker will perform the following steps to exploit the semantic inconsistent vulnerability in deep learning compielr to launch the stealthy attack:
