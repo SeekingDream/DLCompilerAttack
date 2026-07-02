@@ -1,0 +1,10 @@
+# Python bytecode cache (regenerated on every run; never commit)
+__pycache__/
+*.pyc
+
+# macOS folder metadata
+.DS_Store
+
+# Personal scratch / task files (local only, not for the shared repo)
+my_test.py
+task_brief.md
