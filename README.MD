@@ -137,4 +137,77 @@ The table below lists our selected in-the-wild models, chosen from the top 100 m
 | 10 | microsoft/beit-base-patch16-224-pt22k-ft22k|
 
 
+## Generalized Attack API
+
+The original entry point (`main.py`) dispatches by `task_id` (0–5): each id maps
+to a fixed (model, dataset, wrapper) combination, and the model-splitting logic
+is hardcoded in `load_attack_model_cls`. The `Attacker` API removes that
+dispatch — you hand it a model and a dataset, and it selects how to split the
+model automatically:
+
+```python
+from src.api import Attacker
+
+model = load_model(0, load_pretrained=False)      # any supported model
+attacker = Attacker(model, dataset=(train_loader, test_loader))
+attacker.run()                                     # 3-stage attack (needs GPU + compiler)
+```
+
+Runnable example: `examples/general_attack_example.py`.
+
+### How it works
+
+- **Adapters** (`src/adapters.py`) know how to split *one family* of models into
+  the front half (`FeatureModel`) and back half (`TunedModel`) the attack
+  consumes. Each adapter is thin — it just reuses the existing wrapper classes.
+- **`Attacker`** (`src/api.py`) looks up the adapter for a model by type
+  (`REGISTRY`), splits the model, auto-computes the embedding shape at the split
+  (by running one dummy forward pass — no hardcoded shapes), and hands the halves
+  to the **unmodified** `DLCompilerAttack` engine.
+
+### What is supported
+
+- The four CNN families the paper evaluates: **ConvNet, VGG, ResNet, ResNeXt**
+  (i.e. `task_id` 0–5), now reachable through the `Attacker` API without a
+  `task_id`.
+- The old path is untouched: `python main.py --task_id 0..5` still works exactly
+  as before.
+
+### What is NOT supported (by design)
+
+- **Automatic splitting of arbitrary models.** Where to cut a model is a semantic
+  choice the code cannot reliably infer. For an unrecognized model, write a small
+  adapter and pass it in:
+
+  ```python
+  from src.adapters import Adapter
+  class MyAdapter(Adapter):
+      def make_front_half(self, model): ...
+      def make_back_half(self, model, embed_shape): ...
+  attacker = Attacker(my_model, dataset, adapter=MyAdapter())
+  ```
+
+- **Non-CNN architectures** (e.g. ViT/Swin). `utils.load_model` can *load* them
+  (task 6/7), but they have no attack wrappers and are outside the paper's scope.
+- **Running a full attack on a laptop.** `run()` needs a GPU and a real compiler
+  backend. Without them you can still assemble the engine (`build_attacker()`)
+  and run the smoke tests in `tests/`.
+
+### Running on Apple Silicon / machines without TVM
+
+`import src` pulls in modules that `import tvm`, which has no Apple Silicon build.
+`mac_tvm_stub.py` installs a stand-in for `tvm` *only when the real one is
+missing* (a no-op on Simin's CUDA box). Import it before `src`:
+
+```python
+import mac_tvm_stub   # must come before `import src`
+```
+
+### Smoke tests
+
+```bash
+python tests/smoke_families.py   # all 4 CNN families (task 0–5)
+python tests/smoke_assemble.py   # Attacker assembles the DLCompilerAttack engine
+```
+
 
